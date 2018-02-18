@@ -6,10 +6,12 @@
   <session-factory>
     <property name="connection.url">jdbc:mysql://localhost:3306/mobileOperator</property>
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-    <mapping class="model.ClientEntity"/>
-    <mapping class="model.ContractEntity"/>
-    <mapping class="model.OptionEntity"/>
-    <mapping class="model.TariffEntity"/>
+    <property name="connection.username">root</property>
+    <property name="connection.password">112834</property>
+    <mapping class="model.Client"/>
+    <mapping class="model.Contract"/>
+    <mapping class="model.Option"/>
+    <mapping class="model.Tariff"/>
 
     <!-- DB schema will be updated if needed -->
     <!-- <property name="hbm2ddl.auto">update</property> -->

@@ -3,15 +3,19 @@ package model;
 import javax.persistence.*;
 import java.util.Set;
 
+
+/**
+ * Class that represents the Contract entity mapping into "Contracts" table in DB
+ */
 @Entity
 @Table(name = "contracts")
-public class ContractEntity extends AbstractEntity{
+public class Contract extends AbstractEntity{
     private int id;
     private String number;
-    private TariffEntity tariff;
+    private Tariff tariff;
     private boolean isActive;
-    private ClientEntity client;
-    private Set<OptionEntity> options;
+    private Client client;
+    private Set<Option> options;
 
 
 
@@ -49,11 +53,11 @@ public class ContractEntity extends AbstractEntity{
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name="client_id", nullable=false)
-    public ClientEntity getClient() {
+    public Client getClient() {
         return client;
     }
 
-    public void setClient(ClientEntity client) {
+    public void setClient(Client client) {
         this.client = client;
     }
 
@@ -64,21 +68,21 @@ public class ContractEntity extends AbstractEntity{
             joinColumns = {@JoinColumn(name = "contract_id")},
             inverseJoinColumns = {@JoinColumn(name = "option_id")}
     )
-    public Set<OptionEntity> getOptions() {
+    public Set<Option> getOptions() {
         return options;
     }
 
-    public void setOptions(Set<OptionEntity> options) {
+    public void setOptions(Set<Option> options) {
         this.options = options;
     }
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name="tariff_id", nullable=false)
-    public TariffEntity getTariff() {
+    public Tariff getTariff() {
         return tariff;
     }
 
-    public void setTariff(TariffEntity tariff) {
+    public void setTariff(Tariff tariff) {
         this.tariff = tariff;
     }
 
@@ -88,7 +92,7 @@ public class ContractEntity extends AbstractEntity{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ContractEntity that = (ContractEntity) o;
+        Contract that = (Contract) o;
 
         if (id != that.id) return false;
         if (isActive != that.isActive) return false;

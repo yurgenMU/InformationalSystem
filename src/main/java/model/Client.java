@@ -1,12 +1,18 @@
 package model;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import javax.persistence.*;
 import java.sql.Date;
 import java.util.Set;
 
+/**
+ * Class that represents the Client entity mapping into "Clients" table in DB
+ */
 @Entity
+@DynamicUpdate
 @Table(name = "clients")
-public class ClientEntity extends AbstractEntity{
+public class Client extends AbstractEntity{
     private int id;
     private String firstName;
     private String lastName;
@@ -16,7 +22,7 @@ public class ClientEntity extends AbstractEntity{
     private String email;
     private String role;
     private String password;
-    private Set<ContractEntity> contracts;
+    private Set<Contract> contracts;
 
 
     @Id
@@ -113,11 +119,11 @@ public class ClientEntity extends AbstractEntity{
 
 
     @OneToMany(mappedBy = "client",fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
-    public Set<ContractEntity> getContracts() {
+    public Set<Contract> getContracts() {
         return contracts;
     }
 
-    public void setContracts(Set<ContractEntity> contracts) {
+    public void setContracts(Set<Contract> contracts) {
         this.contracts = contracts;
     }
 
@@ -127,7 +133,7 @@ public class ClientEntity extends AbstractEntity{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClientEntity that = (ClientEntity) o;
+        Client that = (Client) o;
 
         if (id != that.id) return false;
         if (firstName != null ? !firstName.equals(that.firstName) : that.firstName != null) return false;

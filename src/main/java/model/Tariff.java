@@ -3,13 +3,18 @@ package model;
 import javax.persistence.*;
 import java.util.Set;
 
+
+/**
+ * Class that represents the Tariff entity mapping into "Tariffs" table in DB
+ */
 @Entity
 @Table(name = "tariffs")
-public class TariffEntity extends AbstractEntity{
+public class Tariff extends AbstractEntity{
     private int id;
     private int price;
-    private Set<ContractEntity> contracts;
-    private Set<OptionEntity> options;
+    private String name;
+    private Set<Contract> contracts;
+    private Set<Option> options;
 
 
     @Id
@@ -34,13 +39,22 @@ public class TariffEntity extends AbstractEntity{
     }
 
 
+    @Basic
+    @Column(name = "name", nullable = false)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "tariff")
-    public Set<ContractEntity> getContracts() {
+    public Set<Contract> getContracts() {
         return contracts;
     }
 
-    public void setContracts(Set<ContractEntity> contracts) {
+    public void setContracts(Set<Contract> contracts) {
         this.contracts = contracts;
     }
 
@@ -50,11 +64,11 @@ public class TariffEntity extends AbstractEntity{
             joinColumns = {@JoinColumn(name = "tariff_id")},
             inverseJoinColumns = {@JoinColumn(name = "option_id")}
     )
-    public Set<OptionEntity> getOptions() {
+    public Set<Option> getOptions() {
         return options;
     }
 
-    public void setOptions(Set<OptionEntity> options) {
+    public void setOptions(Set<Option> options) {
         this.options = options;
     }
 
@@ -63,7 +77,7 @@ public class TariffEntity extends AbstractEntity{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TariffEntity that = (TariffEntity) o;
+        Tariff that = (Tariff) o;
 
         if (id != that.id) return false;
         if (price != that.price) return false;

@@ -7,6 +7,7 @@ USE MOBILEOPERATOR;
 
 CREATE TABLE IF NOT EXISTS Tariffs (
   id   INT          NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL UNIQUE,
   price INT NOT NULL,
   PRIMARY KEY (Id)
 )
@@ -14,8 +15,9 @@ CREATE TABLE IF NOT EXISTS Tariffs (
 
 CREATE TABLE IF NOT EXISTS Options (
   id   INT          NOT NULL AUTO_INCREMENT,
-  name VARCHAR(100) NOT NULL,
-  value INT NOT NULL,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  price INT NOT NULL,
+  connection_cost INT NOT NULL,
   PRIMARY KEY (id)
 )
   ENGINE = InnoDB;
@@ -45,13 +47,15 @@ ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS Contracts(
   id INT NOT NULL AUTO_INCREMENT,
-  number VARCHAR(100) NOT NULL,
+  number VARCHAR(100) NOT NULL UNIQUE,
   tariff_id INT NOT NULL,
   client_id INT NOT NULL,
   is_active BOOLEAN NOT NULL,
+  blocked_by INT,
   PRIMARY KEY (id),
   FOREIGN KEY (client_id) REFERENCES Clients(id),
-  FOREIGN KEY (tariff_id) REFERENCES Tariffs(id)
+  FOREIGN KEY (tariff_id) REFERENCES Tariffs(id),
+  FOREIGN KEY (blocked_by) REFERENCES Clients(id)
 )
 
   ENGINE = InnoDB;
@@ -74,3 +78,9 @@ CREATE TABLE IF NOT EXISTS Options_Compatibility(
 )
 
   ENGINE = InnoDB;
+
+
+INSERT INTO Clients VALUES (0, 'admin', 'admin', '1966.12.11','passport data','home address', 'administrator',
+                          'ROLE_ADMIN', '$2a$11$pcMQeOxvn7Scj3lt00B84.CYRvnxpVSL/JpvPdG9jKLJIFmsNARDO');
+INSERT INTO Contracts VALUES (0, 'admin', 'admin', '1966.12.11','passport data','home address', 'administrator',
+                            'ROLE_ADMIN', '$2a$11$pcMQeOxvn7Scj3lt00B84.CYRvnxpVSL/JpvPdG9jKLJIFmsNARDO');
