@@ -230,7 +230,61 @@ public class OptionDAO implements EntityDAO {
     }
 
     public void deleteCompatibleOption(Option targetOption, Option removedOption) {
+        Session session = null;
+        Transaction transaction = null;
+        try {
+            session = sessionFactory.openSession();
+            transaction = session.beginTransaction();
+            Query query = session.createNativeQuery("DELETE FROM options_compatibility " +
+                    "WHERE (first_option_id = ? and second_option_id = ?)" +
+                    "OR (second_option_id = ? and first_option_id = ?)");
+            query.setParameter(1, targetOption.getId());
+            query.setParameter(2, removedOption.getId());
+            query.setParameter(3, removedOption.getId());
+            query.setParameter(4, targetOption.getId());
+            query.executeUpdate();
+            transaction.commit();
+        } catch (HibernateException he) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            he.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
 
+
+    public Set<Option> getTheRest(Set<Option> compatibleOptions){
+        Session session = null;
+        Transaction transaction = null;
+        StringBuilder sb = new StringBuilder();
+        Set<Option> ans = Collections.emptySet();
+        try {
+            session = sessionFactory.openSession();
+            transaction = session.beginTransaction();
+            sb.append("");
+            List<Integer> values = compatibleOptions.stream().map(Option::getId).collect(Collectors.toList());
+            Query query = session.createNativeQuery("SELECT first_option_id FROM options_compatibility" +
+                    " WHERE first_option_id NOT in :arr UNION (SELECT second_option_id FROM options_compatibility" +
+                    " WHERE second_option_id NOT in :arr)");
+            query.setParameterList("arr", values);
+            List<Integer> idList = query.getResultList();
+            ans = idList.stream().map(x-> getEntity(x)).collect(Collectors.toSet());
+            transaction.commit();
+        } catch (HibernateException he) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            he.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+        return ans;
     }
 
     @Transactional

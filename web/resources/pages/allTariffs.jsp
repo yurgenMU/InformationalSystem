@@ -20,10 +20,10 @@
     <tr>
         <th><h2>All tariffs</h2></th>
     </tr>
-    <c:forEach items="${tariffs}" var="tariff">
-        <button class="accordion" >${tariff.name}</button>
+    <c:forEach items="${tariffs}" var="option">
+        <button class="accordion" >${option.name}</button>
         <div class="panel">
-            Price : ${tariff.price}<br>
+            Price : ${option.price}<br>
 
             <a href="${contextPath}/tariffs/showAll">Show all</a><br>
         </div>

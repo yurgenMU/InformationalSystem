@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class OptionService implements EntityService {
@@ -61,6 +62,16 @@ public class OptionService implements EntityService {
     }
 
 
+    public Set<Option> getCompatibleOptions(Option option) {
+        return optionDAO.getCompatibleOptions(option);
+    }
+
+
+    public Set<Option> getRestOptions(int id, Set<Option> options) {
+        Set<Option> ans = optionDAO.getTheRest(options);
+        ans = ans.stream().filter(x -> x.getId() != id).collect(Collectors.toSet());
+        return ans;
+    }
 
 
     public Model createAddPageModel(Model model) {
@@ -80,4 +91,6 @@ public class OptionService implements EntityService {
 //        optionDAO.setCompatibleOptions(option, options);
 //        project.setUsers(options);
     }
+
+
 }

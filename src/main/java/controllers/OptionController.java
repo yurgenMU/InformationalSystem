@@ -2,8 +2,7 @@ package controllers;
 
 import model.Option;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,9 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import service.OptionService;
 import validator.OptionValidator;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class OptionController {
@@ -61,78 +62,95 @@ public class OptionController {
         return "allOptions";
     }
 
-    @GetMapping(value = "restOption")
+    @PostMapping(value = "restOption/{id}")
     @ResponseBody
-    private Set<Option> showAll(){
-        Set<Option> options = optionService.getAll();
+    public Set<Option> getCompatible(@PathVariable int id){
+        Set<Option> options = optionService.getOptionDAO().getCompatibleOptions(optionService.get(id));
         return options;
     }
 
 
-//    public String editOptionPage(){
-//
+//    @GetMapping(value = "options/edit/addActualOptions/{id}")
+//    @ResponseBody
+//    public Set<Option> getCompatibleOptions(@PathVariable int id){
+//        Option option = optionService.get(id);
+//        return optionService.getCompatibleOptions(option);
 //    }
 //
-//    @RequestMapping(value = "OfficeProject/projects/edit", method = RequestMethod.POST)
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public String updateExisting(@ModelAttribute("mproject") Project mproject) {
-//        projectService.add(mproject);
-//        return "projects";
+//    @GetMapping(value = "options/edit/addOtherOption")
+//    @ResponseBody
+//    public Set<Option> getRestOptions(@PathVariable int id, HttpServletRequest request){
+//        Set<Option> options = getCompatibleOptions(id);
+//        options = options.stream().filter(x -> x.getId() != id).collect(Collectors.toSet());
+//        request.getSession().setAttribute("actualOptions", options);
+//        return optionService.getRestOptions(id, options);
 //    }
-//
-//
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @RequestMapping(value = "OfficeProject/projects/edit", method = RequestMethod.GET)
-//    public String getEditPage(Model model, @RequestParam("projectId") int id) {
-//        projectService.createEditPageModel(id, model);
-//        return "editProject";
-//    }
-//
-//    @RequestMapping(value = "OfficeProject/projects/removeFrom", method = RequestMethod.POST)
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public String deleteUsersFromProject(@RequestParam("projectId") int id,
-//                                         Model model,
-//                                         @RequestParam(value = "auserId", required = false) ArrayList<Integer> selectedUsers
-//    ) {
-//        if (selectedUsers != null) {
-//            projectService.deleteUsersOperation(id, selectedUsers);
-//        }
-//        getEditPage(model, id);
-//        return "redirect: /OfficeProject/OfficeProject/projects/edit?projectId=" + id;
-//    }
-//
-//
-//    @RequestMapping(value = "OfficeProject/projects/addInto", method = RequestMethod.POST)
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public String addUsersIntoProject(@RequestParam("projectId") int id,
-//                                      Model model,
-//                                      @RequestParam(value = "nuserId", required = false) ArrayList<Integer> selectedUsers
-//    ) {
-//        if (selectedUsers != null) {
-//            projectService.addToExisting(id, selectedUsers);
-//        }
-//        getEditPage(model, id);
-//        return "redirect: /OfficeProject/OfficeProject/projects/edit?projectId=" + id;
-//    }
-//
-//
-//    @RequestMapping(value = "OfficeProject/projects/changeName", method = RequestMethod.POST)
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public String changeProjectName(@RequestParam("projectId") int id,
-//                                    @ModelAttribute("mproject") Project project,
-//                                    BindingResult bindingResult,
-//                                    Model model
-//    ) {
-//        projectValidator.validate(project, bindingResult);
-//        if (bindingResult.hasErrors()) {
-//            projectService.createEditPageModel(id, model);
-//            return "redirect: /OfficeProject/OfficeProject/projects/edit?projectId=" + id;
-//        }
-//        projectService.changeName(id, project.getName());
-//        getEditPage(model, id);
-//        return "redirect: /OfficeProject/OfficeProject/projects/edit?projectId=" + id;
-//
-//    }
+
+    @GetMapping(value = "options/edit/addOtherOption")
+    @ResponseStatus(value = HttpStatus.OK)
+    public void addOtherOption(@RequestParam("parentId") int parentId,
+                                      @RequestParam("childId") int childId,
+                                      HttpServletRequest request){
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("actual");
+        Set<Option> other = (Set<Option>) session.getAttribute("other");
+        System.out.println(actual);
+        System.out.println(other);
+        actual.add(optionService.get(childId));
+        other = other.stream().filter(x-> x.getId() != childId).collect(Collectors.toSet());
+        session.setAttribute("actual", actual);
+        session.setAttribute("other", other);
+    }
+
+    @GetMapping(value = "options/edit/removeActualOption")
+    @ResponseStatus(value = HttpStatus.OK)
+    public void removeActualOptions(@RequestParam("parentId") int parentId,
+                                        @RequestParam("childId") int childId,
+                                        HttpServletRequest request){
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("actual");
+        Set<Option> other = (Set<Option>) session.getAttribute("other");
+        actual = actual.stream().filter(x-> x.getId() != childId).collect(Collectors.toSet());
+        other.add(optionService.get(childId));
+        session.setAttribute("actual", actual);
+        session.setAttribute("other", other);
+    }
+
+    @GetMapping(value = "options/edit/getActualSessionOptions")
+    @ResponseBody
+    public Set<Option> getSessionActualOptions(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("actual");
+        System.out.println(actual);
+        return actual;
+    }
+
+
+    @GetMapping(value = "options/edit/getOtherSessionOptions")
+    @ResponseBody
+    public Set<Option> getSessionOtherOptions(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("other");
+        System.out.println(actual);
+        return actual;
+    }
+
+
+    @GetMapping(value = "options/edit/{id}")
+    public String getEditPage(Model model, @PathVariable int id, HttpServletRequest request){
+        Option option = optionService.get(id);
+        Set<Option> actualOptions = optionService.getCompatibleOptions(option);
+        Set<Option> otherOptions = optionService.getRestOptions(id, actualOptions);
+        model.addAttribute("option", option);
+        model.addAttribute("actual", actualOptions);
+        model.addAttribute("other", otherOptions);
+        request.getSession().setAttribute("option", option);
+        request.getSession().setAttribute("actual", actualOptions);
+        request.getSession().setAttribute("other", otherOptions);
+        return "editOption";
+    }
+
+
 
 
 }

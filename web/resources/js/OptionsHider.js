@@ -1,11 +1,11 @@
-$(document).ready(function() {
-    $('#userName').blur(function() {
+$(document).ready(function () {
+    $('#userName').blur(function () {
         $.ajax({
-            url : 'GetUserServlet',
-            data : {
-                userName : $('#userName').val()
+            url: 'GetUserServlet',
+            data: {
+                options: $('#options').val()
             },
-            success : function(responseText) {
+            success: function (responseText) {
                 $('#ajaxGetUserServletResponse').text(responseText);
             }
         });

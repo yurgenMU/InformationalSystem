@@ -5,7 +5,7 @@
            prefix="springForm"%>
 
 <link rel="stylesheet" type="text/css" href="/resources/css/bootstrap.min.css">
-<script type="text/javascript" src="/resources/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/resources/js/lib/bootstrap.min.js"></script>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
@@ -42,15 +42,15 @@
             </tr>
             <tr>
                 <td>Option</td>
-                <td>Select</td>
+                <td>Action</td>
             </tr>
             </thead>
             <tbody>
-            <c:forEach var="tariff" items="${options}">
+            <c:forEach var="option" items="${options}">
                 <tr>
-                    <td>${tariff.name}</td>
+                    <td>${option.name}</td>
                     <td>
-                        <input type="checkbox" name="optionId" value="${tariff.id}">
+                        <input type="checkbox" name="optionId" value="${option.id}">
                     </td>
                 </tr>
             </c:forEach>

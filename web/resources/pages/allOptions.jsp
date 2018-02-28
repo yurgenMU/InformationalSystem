@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <link rel="stylesheet" type="text/css" href="/resources/css/bootstrap.min.css">
-<script type="text/javascript" src="/resources/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/resources/js/lib/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/resources/js/lib/bootstrap.min.js"></script>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
@@ -17,21 +18,21 @@
 <body>
 
 <div class="container-fluid">
-        <tr>
-            <th><h2>All options</h2></th>
-        </tr>
-        <c:forEach items="${options}" var="tariff">
-            <button class="accordion" >${tariff.name}</button>
-            <div class="panel">
-               Price : ${tariff.price}<br>
-
-                <a href="${contextPath}/contracts/showAll">Show all</a><br>
-            </div>
-                <%--<td><a href="${contextPath}/OfficeProject/projects/edit?projectId=${mproject.id}">${mproject.name}</a></td>--%>
-        </c:forEach>
+    <tr>
+        <th><h2>All options</h2></th>
+    </tr>
+    <c:forEach items="${options}" var="option">
+        <button class="accordion">${option.name}</button>
+        <div class="panel">
+            Price : ${option.price}<br>
+            Connection cost: ${option.connectionCost}<br>
+            <a href="${contextPath}/options/edit/${option.id}" class="btn btn-info" role="button">Edit</a>
+        </div>
+        <%--<td><a href="${contextPath}/OfficeProject/projects/edit?projectId=${mproject.id}">${mproject.name}</a></td>--%>
+    </c:forEach>
     <a href="${contextPath}/restOption" class="btn btn-info" role="button">Add new</a>
 
-    <script src = ${contextPath}/resources/js/first.js></script>
+    <script src=${contextPath}/resources/js/first.js></script>
 
 </div>
 </body>
