@@ -4,7 +4,6 @@
 <%@ taglib uri="http://www.springframework.org/tags/form"
            prefix="springForm" %>
 <script type="text/javascript" src="/resources/js/lib/jquery-3.3.1.min.js"></script>
-<%--<link rel="stylesheet" type="text/css" href="/resources/css/bootstrap.min.css">--%>
 <script type="text/javascript" src="/resources/js/lib/bootstrap.min.js"></script>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -24,7 +23,6 @@
     <springForm:form name="form1" method="post" action="${contextPath}/options/registerNew"
                      modelAttribute="option" class="form-signin">
         <h2>Edit option</h2>
-        <%--<spring:bind path="name">--%>
         <div class="form-group ${status.error ? 'has-error' : ''}">
             Name: <form:input type="text" path="name" class="form-control"
                               placeholder="Edit option's name" autofocus="true"></form:input>
@@ -37,61 +35,43 @@
             <form:errors path="connectionCost"></form:errors>
         </div>
         <br>
-        <%--</spring:bind>--%>
         <INPUT id="saveChanges" type="submit" class="btn btn-primary" value="Save changes"/>
-        <%--<button id="saveChanges" type="button" class="btn btn-primary">Save changes</button>--%>
         <button id="deleteOption" type="button" class="btn btn-primary">Delete option</button>
-        <br>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Compatible options</th>
-            </tr>
-            <tr>
-                <td>Option</td>
-                <td>Action</td>
-            </tr>
-            </thead>
-            <tbody id="first_table_body">
-            <%--<c:forEach var="actualOption" items="${actual}">--%>
-                <%--<tr>--%>
-                    <%--<td>${actualOption.name}</td>--%>
-                    <%--<td>--%>
-                        <%--<a onclick="ajaxRemoveExs(${option.id})" id="delete${actualOption.id}" class="btn btn-primary"--%>
-                           <%--role="button">Remove</a>--%>
-                    <%--</td>--%>
-                <%--</tr>--%>
-            <%--</c:forEach>--%>
-            </tbody>
-        </table>
+        <div id="t1">
+            <br>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Compatible options</th>
+                </tr>
+                <tr>
+                    <td>Option</td>
+                    <td>Action</td>
+                </tr>
+                </thead>
+                <tbody id="first_table_body">
+                </tbody>
+            </table>
+        </div>
         <br>
         <h3>Add new Options</h3>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Compatible options</th>
-            </tr>
-            <tr>
-                <td>Option</td>
-                <td>Action</td>
-            </tr>
-            </thead>
-            <tbody id="second_table_body">
-            <%--<c:forEach var="otherOption" items="${other}">--%>
-                <%--<tr>--%>
-                    <%--<td>${otherOption.name}</td>--%>
-                    <%--<td>--%>
-                            <%--&lt;%&ndash;<button id="add${otherOption.id}" type="button" class="btn btn-primary">Add</button>&ndash;%&gt;--%>
-                        <%--<a onclick="ajaxAddNew(${otherOption.id})" id="delete${otherOption.id}" class="btn btn-primary"--%>
-                           <%--role="button">Add</a>--%>
-
-                    <%--</td>--%>
-                <%--</tr>--%>
-            <%--</c:forEach>--%>
-            </tbody>
-        </table>
+        <div id="t2">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Compatible options</th>
+                </tr>
+                <tr>
+                    <td>Option</td>
+                    <td>Action</td>
+                </tr>
+                </thead>
+                <tbody id="second_table_body">
+                </tbody>
+            </table>
+        </div>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-
+        <%--<div id="div1" style="display: none;">--%>
         <script>
             $(document).ready(function () {
                 repaintTables();
@@ -119,27 +99,18 @@
                         url: "getActualSessionOptions",
                         success: function (json) {
                             var content = document.getElementById("first_table_body");
-                            // content.id = 'firstTable';
-                            // document.body.appendChild(content);
+                            var arr = [];
                             if (content.innerHTML != null) {
                                 content.innerHTML = "";
                             }
                             for (var i in json) {
-                                var id = json[i].id
-                                var name = "add" + id
+                                var idx = json[i].id
+                                var name = "add" + idx
                                 $("#first_table_body")
-                                    .append("<tr><td>" + json[i].name + "</td><td>" +
-                                        "<button id=" + name + " type=\"button\" class=\"btn btn-primary\">Remove</button>" +
+                                    .append("<tr data-id=" + idx + "><td>" + json[i].name + "</td><td>" +
+                                        "<button type=\"button\" class=\"btn btn-primary\">Remove</button>" +
                                         "</td></tr>");
-                                var a = "#" + name;
-                                var b = $(a);
-                                // $(b).click(function (event) {
-                                //     ajaxRemoveExs(id);
-                                // })
-
                             }
-
-
                         },
                     });
                     $.ajax({
@@ -147,8 +118,6 @@
                         url: "getOtherSessionOptions",
                         success: function (json) {
                             var content = document.getElementById("second_table_body");
-                            // content.id = 'secondTable';
-                            // document.body.appendChild(content);
                             if (content.innerHTML != null) {
                                 content.innerHTML = "";
                             }
@@ -156,13 +125,13 @@
                                 var id = json[i].id
                                 var name = "delete" + id
                                 $("#second_table_body")
-                                    .append("<tr><td>" + json[i].name + "</td><td>" +
-                                        "<button id=" + name + " type=\"button\" class=\"btn btn-primary\">Add</button>" +
+                                    .append("<tr data-id=" + name + "><td>" + json[i].name + "</td><td>" +
+                                        "<button type=\"button\" class=\"btn btn-primary\">Add</button>" +
                                         "</td></tr>");
-                                var a = "#" + name;
-                                var b = $(a);
+                                // var a = "#" + name;
+                                // var b = $(a);
                                 // $(b).click(function (event) {
-                                //     f();
+                                //     ajaxAddNew(id);
                                 // })
 
 
@@ -172,22 +141,19 @@
                     });
                 }
 
-                // function isClicked(name) {
-                //     $("#delete2").click(function (event) {
-                //         alert('hui')
-                //     })
-                // }
+                function f() {
 
-                function  f() {
-                    $("#second_table_body").on('click', "#delete2", function() {
-                        ajaxAddNew(2);
+                    $("#second_table_body[data-id]").on('click', function () {
+                        alert(2)
                         // your code...
                     });
 
                 }
 
-
-
+                // $("#second_table_body").attr("data-id").on('click', function () {
+                //     ajaxAddNew(2);
+                //     // your code...
+                // });
             })
         </script>
     </springForm:form>
