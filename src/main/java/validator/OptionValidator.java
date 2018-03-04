@@ -15,7 +15,7 @@ public class OptionValidator implements Validator {
     @Override
     public void validate(Object o, Errors errors) {
         Option option = (Option) o;
-        Option proxyOption = (Option) optionService.getByName(option.getName().trim());
+        Option proxyOption = optionService.getByName(option.getName().trim());
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "Required");
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "price", "Required");
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "connectionCost", "Required");

@@ -160,41 +160,44 @@ public class OptionDAO implements EntityDAO {
     public Set<Option> getCompatibleOptions(Set<Option> options) {
         Session session = null;
         Transaction transaction = null;
-        StringBuilder sb = new StringBuilder();
         Set<Option> ans = Collections.emptySet();
-        try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
-            sb.append("");
-            List<Integer> values = options.stream().map(Option::getId).collect(Collectors.toList());
-            Query query = session.createNativeQuery("SELECT " +
-                    "b.second_option_id " +
-                    "FROM (SELECT `options_compatibility`.`first_option_id` " +
-                    "AS `first_option_id`,`options_compatibility`.`second_option_id` " +
-                    "AS `second_option_id` FROM `options_compatibility` UNION SELECT `options_compatibility`.`second_option_id` " +
-                    "AS `second_option_id`,`options_compatibility`.`first_option_id` " +
-                    "AS `first_option_id` FROM `options_compatibility`) AS a " +
-                    "INNER JOIN (SELECT `options_compatibility`.`first_option_id` " +
-                    "AS `first_option_id`,`options_compatibility`.`second_option_id` " +
-                    "AS `second_option_id` FROM `options_compatibility` UNION SELECT `options_compatibility`.`second_option_id` " +
-                    "AS `second_option_id`,`options_compatibility`.`first_option_id` " +
-                    "AS `first_option_id` FROM `options_compatibility`) AS b ON a.second_option_id = b.second_option_id " +
-                    "WHERE a.first_option_id IN :arr AND b.first_option_id IN :arr " +
-                    "GROUP BY second_option_id " +
-                    "HAVING COUNT(*) = :par");
-            query.setParameterList("arr", values);
-            query.setParameter("par", values.size() * values.size());
-            List<Integer> idList = query.getResultList();
-            ans = idList.stream().map(x-> getEntity(x)).collect(Collectors.toSet());
-            transaction.commit();
-        } catch (HibernateException he) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            he.printStackTrace();
-        } finally {
-            if (session != null) {
-                session.close();
+        if (options.size() == 0) {
+            return getAllEntities();
+        } else {
+            try {
+                session = sessionFactory.openSession();
+                transaction = session.beginTransaction();
+                List<Integer> values = options.stream().map(Option::getId).collect(Collectors.toList());
+                Query query = session.createNativeQuery("SELECT " +
+                        "b.second_option_id " +
+                        "FROM (SELECT `options_compatibility`.`first_option_id` " +
+                        "AS `first_option_id`,`options_compatibility`.`second_option_id` " +
+                        "AS `second_option_id` FROM `options_compatibility` UNION SELECT `options_compatibility`.`second_option_id` " +
+                        "AS `second_option_id`,`options_compatibility`.`first_option_id` " +
+                        "AS `first_option_id` FROM `options_compatibility`) AS a " +
+                        "INNER JOIN (SELECT `options_compatibility`.`first_option_id` " +
+                        "AS `first_option_id`,`options_compatibility`.`second_option_id` " +
+                        "AS `second_option_id` FROM `options_compatibility` UNION SELECT `options_compatibility`.`second_option_id` " +
+                        "AS `second_option_id`,`options_compatibility`.`first_option_id` " +
+                        "AS `first_option_id` FROM `options_compatibility`) AS b ON a.second_option_id = b.second_option_id " +
+                        "WHERE a.first_option_id IN :arr AND b.first_option_id IN :arr " +
+                        "GROUP BY second_option_id " +
+                        "HAVING COUNT(*) = :par");
+                query.setParameterList("arr", values);
+                query.setParameter("par", values.size() * values.size());
+                List<Integer> idList = query.getResultList();
+                ans = idList.stream().map(x -> getEntity(x)).collect(Collectors.toSet());
+                ans = ans.stream().filter(y -> !values.contains(y.getId())).collect(Collectors.toSet());
+                transaction.commit();
+            } catch (HibernateException he) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                he.printStackTrace();
+            } finally {
+                if (session != null) {
+                    session.close();
+                }
             }
         }
         return ans;
@@ -203,7 +206,9 @@ public class OptionDAO implements EntityDAO {
     public Set<Option> getCompatibleOptions(Option option) {
         Set<Option> options = new HashSet<>();
         options.add(option);
-        return getCompatibleOptions(options);
+        Set<Option> ans = getCompatibleOptions(options);
+        ans = ans.stream().filter(x-> x.getId()!=option.getId()).collect(Collectors.toSet());
+        return ans;
     }
 
     public void addCompatibleOption(Option targetOption, Option addedOption) {
@@ -230,18 +235,20 @@ public class OptionDAO implements EntityDAO {
     }
 
     public void deleteCompatibleOption(Option targetOption, Option removedOption) {
+        executeRemoving(removedOption, targetOption);
+        executeRemoving(targetOption, removedOption);
+    }
+
+    private void executeRemoving(Option targetOption, Option removedOption) {
         Session session = null;
         Transaction transaction = null;
         try {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
             Query query = session.createNativeQuery("DELETE FROM options_compatibility " +
-                    "WHERE (first_option_id = ? and second_option_id = ?)" +
-                    "OR (second_option_id = ? and first_option_id = ?)");
+                    "WHERE (first_option_id = ? AND second_option_id = ?)");
             query.setParameter(1, targetOption.getId());
             query.setParameter(2, removedOption.getId());
-            query.setParameter(3, removedOption.getId());
-            query.setParameter(4, targetOption.getId());
             query.executeUpdate();
             transaction.commit();
         } catch (HibernateException he) {
@@ -257,22 +264,25 @@ public class OptionDAO implements EntityDAO {
     }
 
 
-    public Set<Option> getTheRest(Set<Option> compatibleOptions){
+    public Set<Option> getTheRest(Set<Option> compatibleOptions) {
         Session session = null;
         Transaction transaction = null;
-        StringBuilder sb = new StringBuilder();
         Set<Option> ans = Collections.emptySet();
         try {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
-            sb.append("");
             List<Integer> values = compatibleOptions.stream().map(Option::getId).collect(Collectors.toList());
-            Query query = session.createNativeQuery("SELECT first_option_id FROM options_compatibility" +
-                    " WHERE first_option_id NOT in :arr UNION (SELECT second_option_id FROM options_compatibility" +
-                    " WHERE second_option_id NOT in :arr)");
-            query.setParameterList("arr", values);
+            Query query;
+            if (values.size() == 0) {
+                query = session.createNativeQuery("SELECT id FROM options");
+            } else {
+                query = session.createNativeQuery("SELECT first_option_id FROM options_compatibility" +
+                        " WHERE first_option_id NOT IN :arr UNION (SELECT second_option_id FROM options_compatibility" +
+                        " WHERE second_option_id NOT IN :arr)");
+                query.setParameterList("arr", values);
+            }
             List<Integer> idList = query.getResultList();
-            ans = idList.stream().map(x-> getEntity(x)).collect(Collectors.toSet());
+            ans = idList.stream().map(x -> getEntity(x)).collect(Collectors.toSet());
             transaction.commit();
         } catch (HibernateException he) {
             if (transaction != null) {

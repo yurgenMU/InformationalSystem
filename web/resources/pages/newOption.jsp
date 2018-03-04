@@ -49,11 +49,11 @@
             </tr>
             </thead>
             <tbody id>
-            <c:forEach var="option" items="${options}">
+            <c:forEach var="tariff" items="${options}">
                 <tr>
-                    <td>${option.name}</td>
+                    <td>${tariff.name}</td>
                     <td>
-                        <input type="checkbox" name="optionId" value="${option.id}">
+                        <input type="checkbox" name="optionId" value="${tariff.id}">
                     </td>
                 </tr>
             </c:forEach>

@@ -1,5 +1,7 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -9,18 +11,18 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "options")
-public class Option extends AbstractEntity{
+public class Option extends AbstractEntity {
     private int id;
     private String name;
     private int price;
     private int connectionCost;
     private Set<Contract> contracts;
+    @JsonIgnore
     private Set<Tariff> tariffs;
 
 
-
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     public int getId() {
         return id;

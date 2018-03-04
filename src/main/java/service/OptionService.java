@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +31,10 @@ public class OptionService implements EntityService {
     @Transactional
     public void add(AbstractEntity entity) {
         optionDAO.addEntity(entity);
+        Option option = (Option) entity;
+        Option proxyOption = optionDAO.getEntityByName(option.getName());
+        optionDAO.addCompatibleOption(proxyOption, proxyOption);
+
     }
 
     @Override
@@ -46,7 +52,7 @@ public class OptionService implements EntityService {
     @Override
     @Transactional
     public void edit(AbstractEntity entity) {
-
+        optionDAO.editEntity(entity);
     }
 
     @Override
@@ -58,7 +64,9 @@ public class OptionService implements EntityService {
     @Override
     @Transactional
     public void remove(int id) {
-
+        Option option = optionDAO.getEntity(id);
+        optionDAO.getCompatibleOptions(option).stream().forEach(x -> optionDAO.deleteCompatibleOption(option, x));
+        optionDAO.removeEntity(id);
     }
 
 
@@ -66,10 +74,14 @@ public class OptionService implements EntityService {
         return optionDAO.getCompatibleOptions(option);
     }
 
+    public Set<Option> getCompatibleOptions(Set<Option> options){
+        return optionDAO.getCompatibleOptions(options);
+    }
 
-    public Set<Option> getRestOptions(int id, Set<Option> options) {
+
+    public Set<Option> getRestOptions(Set<Option> options) {
         Set<Option> ans = optionDAO.getTheRest(options);
-        ans = ans.stream().filter(x -> x.getId() != id).collect(Collectors.toSet());
+
         return ans;
     }
 
@@ -90,6 +102,37 @@ public class OptionService implements EntityService {
         options.stream().forEach(x -> optionDAO.addCompatibleOption(option, x));
 //        optionDAO.setCompatibleOptions(option, options);
 //        project.setUsers(options);
+    }
+
+    public Model setEditPageParams(Model model, int id, HttpSession session) {
+        Option option = get(id);
+        Set<Option> actualOptions = getCompatibleOptions(option);
+        actualOptions = actualOptions.stream().filter(x-> x.getId()!= id).collect(Collectors.toSet());
+        Set<Option> otherOptions = getRestOptions(actualOptions);
+        otherOptions = otherOptions.stream().filter(x -> x.getId() != id).collect(Collectors.toSet());
+        model.addAttribute("option", option);
+        model.addAttribute("actual", actualOptions);
+        model.addAttribute("other", otherOptions);
+        session.setAttribute("option", option);
+        session.setAttribute("actual", actualOptions);
+        session.setAttribute("other", otherOptions);
+        return model;
+    }
+
+
+    public void editOptionParameters(Option option, Set<Option> comp) {
+        Set<Option> compNow = optionDAO.getCompatibleOptions(option);
+        compNow.stream().forEach(x -> {
+            if (!comp.contains(x)) {
+                optionDAO.deleteCompatibleOption(option, x);
+            }
+        });
+        comp.stream().forEach(x -> {
+            if (!compNow.contains(x)) {
+                optionDAO.addCompatibleOption(option, x);
+            }
+        });
+        edit(option);
     }
 
 

@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
@@ -22,6 +23,11 @@ public class Client extends AbstractEntity{
     private String email;
     private String role;
     private String password;
+
+    private String confirmPassword;
+    private String dateValue;
+
+
     private Set<Contract> contracts;
 
 
@@ -57,6 +63,7 @@ public class Client extends AbstractEntity{
     }
 
     @Basic
+    @JsonSerialize
     @Column(name = "birth", nullable = false)
     public Date getBirth() {
         return birth;
@@ -116,7 +123,23 @@ public class Client extends AbstractEntity{
         this.password = password;
     }
 
+    @Transient
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
 
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    @Transient
+    public String getDateValue() {
+        return dateValue;
+    }
+
+    public void setDateValue(String dateValue) {
+        this.dateValue = dateValue;
+    }
 
     @OneToMany(mappedBy = "client",fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
     public Set<Contract> getContracts() {

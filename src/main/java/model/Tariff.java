@@ -58,7 +58,7 @@ public class Tariff extends AbstractEntity{
         this.contracts = contracts;
     }
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "tariffs_options",
             joinColumns = {@JoinColumn(name = "tariff_id")},

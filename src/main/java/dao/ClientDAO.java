@@ -2,6 +2,7 @@ package dao;
 
 import model.AbstractEntity;
 import model.Client;
+import model.Option;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -11,9 +12,11 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 public class ClientDAO implements EntityDAO {
@@ -150,5 +153,34 @@ public class ClientDAO implements EntityDAO {
         transaction.commit();
         session.close();
         return new HashSet<>(usersData);
+    }
+
+    public Set<Client> getByInitials(String initials) {
+        Session session = null;
+        Transaction transaction = null;
+        Set<Client> ans = Collections.emptySet();
+        try {
+            session = sessionFactory.openSession();
+            transaction = session.beginTransaction();
+            Query query = session.createNativeQuery("SELECT id FROM " +
+                    "CLIENTS WHERE " +
+                    "replace(CONCAT(first_name, last_name),' ', '')" +
+                    " LIKE ?");
+            query.setParameter(1, initials);
+            List<Integer> idList = query.getResultList();
+            ans = idList.stream().map(x -> getEntity(x)).collect(Collectors.toSet());
+            transaction.commit();
+        } catch (HibernateException he) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            he.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+
+        return ans;
     }
 }

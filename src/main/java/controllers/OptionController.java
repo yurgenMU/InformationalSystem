@@ -22,7 +22,6 @@ public class OptionController {
     private OptionService optionService;
 
 
-
     @Autowired
     private OptionValidator optionValidator;
 
@@ -62,95 +61,115 @@ public class OptionController {
         return "allOptions";
     }
 
-    @PostMapping(value = "restOption/{id}")
-    @ResponseBody
-    public Set<Option> getCompatible(@PathVariable int id){
-        Set<Option> options = optionService.getOptionDAO().getCompatibleOptions(optionService.get(id));
-        return options;
-    }
-
-
-//    @GetMapping(value = "options/edit/addActualOptions/{id}")
-//    @ResponseBody
-//    public Set<Option> getCompatibleOptions(@PathVariable int id){
-//        Option option = optionService.get(id);
-//        return optionService.getCompatibleOptions(option);
-//    }
-//
-//    @GetMapping(value = "options/edit/addOtherOption")
-//    @ResponseBody
-//    public Set<Option> getRestOptions(@PathVariable int id, HttpServletRequest request){
-//        Set<Option> options = getCompatibleOptions(id);
-//        options = options.stream().filter(x -> x.getId() != id).collect(Collectors.toSet());
-//        request.getSession().setAttribute("actualOptions", options);
-//        return optionService.getRestOptions(id, options);
-//    }
 
     @GetMapping(value = "options/edit/addOtherOption")
     @ResponseStatus(value = HttpStatus.OK)
-    public void addOtherOption(@RequestParam("parentId") int parentId,
-                                      @RequestParam("childId") int childId,
-                                      HttpServletRequest request){
+    public void addOtherOption(
+            @RequestParam("childId") int childId,
+            HttpServletRequest request) {
         HttpSession session = request.getSession();
         Set<Option> actual = (Set<Option>) session.getAttribute("actual");
         Set<Option> other = (Set<Option>) session.getAttribute("other");
-        System.out.println(actual);
-        System.out.println(other);
         actual.add(optionService.get(childId));
-        other = other.stream().filter(x-> x.getId() != childId).collect(Collectors.toSet());
+        other = other.stream().filter(x -> x.getId() != childId).collect(Collectors.toSet());
         session.setAttribute("actual", actual);
         session.setAttribute("other", other);
     }
 
     @GetMapping(value = "options/edit/removeActualOption")
     @ResponseStatus(value = HttpStatus.OK)
-    public void removeActualOptions(@RequestParam("parentId") int parentId,
-                                        @RequestParam("childId") int childId,
-                                        HttpServletRequest request){
+    public void removeActualOptions(
+            @RequestParam("childId") int childId,
+            HttpServletRequest request) {
         HttpSession session = request.getSession();
         Set<Option> actual = (Set<Option>) session.getAttribute("actual");
         Set<Option> other = (Set<Option>) session.getAttribute("other");
-        actual = actual.stream().filter(x-> x.getId() != childId).collect(Collectors.toSet());
+        actual = actual.stream().filter(x -> x.getId() != childId).collect(Collectors.toSet());
         other.add(optionService.get(childId));
         session.setAttribute("actual", actual);
         session.setAttribute("other", other);
     }
 
-    @GetMapping(value = "options/edit/getActualSessionOptions")
+    @GetMapping(value = {"options/edit/getActualSessionOptions", "tariffs/getChosenOptions"
+            , "tariffs/edit/getChosenOptions"})
     @ResponseBody
-    public Set<Option> getSessionActualOptions(HttpServletRequest request){
+    public Set<Option> getSessionActualOptions(HttpServletRequest request) {
         HttpSession session = request.getSession();
         Set<Option> actual = (Set<Option>) session.getAttribute("actual");
-        System.out.println(actual);
         return actual;
     }
 
 
-    @GetMapping(value = "options/edit/getOtherSessionOptions")
+    @GetMapping(value = {"options/edit/getOtherSessionOptions", "tariffs/getAvailableOptions",
+            "tariffs/edit/getAvailableOptions"})
     @ResponseBody
-    public Set<Option> getSessionOtherOptions(HttpServletRequest request){
+    public Set<Option> getSessionOtherOptions(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        Set<Option> actual = (Set<Option>) session.getAttribute("other");
-        System.out.println(actual);
-        return actual;
+        Set<Option> other = (Set<Option>) session.getAttribute("other");
+        return other;
     }
 
+
+    @GetMapping(value = {"tariffs/addToTariff", "tariffs/edit/addToTariff"})
+    @ResponseStatus(value = HttpStatus.OK)
+    public void addOptionToTariff(
+            @RequestParam("optionId") int optionId,
+            HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("actual");
+        actual.add(optionService.get(optionId));
+        Set<Option> other = optionService.getCompatibleOptions(actual)
+                .stream()
+                .filter(x -> x.getId() != optionId)
+                .collect(Collectors.toSet());
+        session.setAttribute("actual", actual);
+        session.setAttribute("other", other);
+    }
+
+    @GetMapping(value = {"tariffs/removeFromTariff", "tariffs/edit/removeFromTariff"})
+    @ResponseStatus(value = HttpStatus.OK)
+    public void removeOptionfromTariff(
+            @RequestParam("optionId") int optionId,
+            HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Set<Option> actual = (Set<Option>) session.getAttribute("actual");
+        Set<Option> proxySet = actual.stream().filter(x -> x.getId() != optionId).collect(Collectors.toSet());
+        Set<Option> other = optionService.getCompatibleOptions(proxySet);
+//        other = other.stream().filter(x-> x.getId()!= optionId).collect(Collectors.toSet());
+        session.setAttribute("actual", proxySet);
+        session.setAttribute("other", other);
+    }
 
     @GetMapping(value = "options/edit/{id}")
-    public String getEditPage(Model model, @PathVariable int id, HttpServletRequest request){
-        Option option = optionService.get(id);
-        Set<Option> actualOptions = optionService.getCompatibleOptions(option);
-        Set<Option> otherOptions = optionService.getRestOptions(id, actualOptions);
-        model.addAttribute("option", option);
-        model.addAttribute("actual", actualOptions);
-        model.addAttribute("other", otherOptions);
-        request.getSession().setAttribute("option", option);
-        request.getSession().setAttribute("actual", actualOptions);
-        request.getSession().setAttribute("other", otherOptions);
+    public String getEditPage(Model model, @PathVariable int id, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        optionService.setEditPageParams(model, id, session);
         return "editOption";
     }
 
 
+    @PostMapping(value = "options/edit/{id}")
+    public String editPage(Model model, @PathVariable int id, HttpServletRequest request,
+                           @ModelAttribute("option") Option option, BindingResult bindingResult) {
+        optionValidator.validate(option, bindingResult);
+        HttpSession session = request.getSession();
+        if (bindingResult.hasErrors()) {
+            optionService.setEditPageParams(model, id, session);
+            return "redirect: /options/edit/" + id;
+        }
+        Set<Option> act = (Set<Option>) session.getAttribute("actual");
+        Set<Option> oth = (Set<Option>) session.getAttribute("other");
+        optionService.editOptionParameters(option, act);
+        optionService.edit(option);
+        return "redirect: /options/showAll";
+    }
+
+
+    @GetMapping(value = "options/remove/{id}")
+    public String deleteOption(@PathVariable("id") int id) {
+        optionService.remove(id);
+        return "redirect: /options/showAll";
+    }
 
 
 }

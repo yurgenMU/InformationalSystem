@@ -21,12 +21,12 @@
     <tr>
         <th><h2>All options</h2></th>
     </tr>
-    <c:forEach items="${options}" var="option">
-        <button class="accordion">${option.name}</button>
+    <c:forEach items="${options}" var="tariff">
+        <button class="accordion">${tariff.name}</button>
         <div class="panel">
-            Price : ${option.price}<br>
-            Connection cost: ${option.connectionCost}<br>
-            <a href="${contextPath}/options/edit/${option.id}" class="btn btn-info" role="button">Edit</a>
+            Price : ${tariff.price}<br>
+            Connection cost: ${tariff.connectionCost}<br>
+            <a href="${contextPath}/options/edit/${tariff.id}" class="btn btn-info" role="button">Edit</a>
         </div>
         <%--<td><a href="${contextPath}/OfficeProject/projects/edit?projectId=${mproject.id}">${mproject.name}</a></td>--%>
     </c:forEach>
