@@ -31,6 +31,7 @@
         <property name="contractDAO" ref="contractDAO"></property>
         <property name="clientService" ref="clientService"></property>
         <property name="tariffService" ref="tariffService"></property>
+        <property name="optionService" ref="optionService"></property>
     </bean>
     <bean id="clientValidator" class="validator.ClientValidator"></bean>
     <bean id="optionValidator" class="validator.OptionValidator"></bean>

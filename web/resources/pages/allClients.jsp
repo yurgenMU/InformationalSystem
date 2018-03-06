@@ -53,9 +53,10 @@
                 <li>${contract.number}</li>
             </h4>
         </ul>
-        <a href="${contextPath}/contracts/new" class="btn btn-info" role="button">New Contract</a>
+
     </c:forEach>
-        <a href="${contextPath}/tariffs/edit/${tariff.id}" class="btn btn-primary" role="button">Edit</a>
+        <a href="${contextPath}/contracts/new?clientId=${client.id}" class="btn btn-info" role="button">New Contract</a>
+        <%--<a href="${contextPath}/tariffs/edit/${tariff.id}" class="btn btn-primary" role="button">Edit</a>--%>
     </div>
     <%--<td><a href="${contextPath}/OfficeProject/projects/edit?projectId=${mproject.id}">${mproject.name}</a></td>--%>
 </c:forEach>

@@ -82,5 +82,7 @@ CREATE TABLE IF NOT EXISTS Options_Compatibility(
 
 INSERT INTO Clients VALUES (0, 'admin', 'admin', '1966.12.11','passport data','home address', 'administrator',
                           'ROLE_ADMIN', '$2a$11$pcMQeOxvn7Scj3lt00B84.CYRvnxpVSL/JpvPdG9jKLJIFmsNARDO');
-INSERT INTO Contracts VALUES (0, 'admin', 'admin', '1966.12.11','passport data','home address', 'administrator',
-                            'ROLE_ADMIN', '$2a$11$pcMQeOxvn7Scj3lt00B84.CYRvnxpVSL/JpvPdG9jKLJIFmsNARDO');
+
+INSERT into Options VALUES (1,'first option',300,100);
+insert into tariffs VALUES (1, 'first tariff', 123);
+INSERT INTO Contracts VALUES (1, '911', 1, 1,0,null);

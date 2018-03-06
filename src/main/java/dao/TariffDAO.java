@@ -79,7 +79,9 @@ public class TariffDAO implements EntityDAO {
         Session session = sessionFactory.openSession();
         Query query = session.createQuery("from Tariff where name =:name");
         query.setParameter("name", name);
-        return (Tariff) query.uniqueResult();
+        Tariff ans = (Tariff) query.uniqueResult();
+        session.close();
+        return ans;
     }
 
 

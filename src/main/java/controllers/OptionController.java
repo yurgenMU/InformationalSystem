@@ -62,7 +62,7 @@ public class OptionController {
     }
 
 
-    @GetMapping(value = "options/edit/addOtherOption")
+    @GetMapping(value = {"options/edit/addOtherOption", "contracts/addToContract"})
     @ResponseStatus(value = HttpStatus.OK)
     public void addOtherOption(
             @RequestParam("childId") int childId,
@@ -76,7 +76,7 @@ public class OptionController {
         session.setAttribute("other", other);
     }
 
-    @GetMapping(value = "options/edit/removeActualOption")
+    @GetMapping(value = {"options/edit/removeActualOption", "contracts/removeFromContract"})
     @ResponseStatus(value = HttpStatus.OK)
     public void removeActualOptions(
             @RequestParam("childId") int childId,
@@ -91,7 +91,7 @@ public class OptionController {
     }
 
     @GetMapping(value = {"options/edit/getActualSessionOptions", "tariffs/getChosenOptions"
-            , "tariffs/edit/getChosenOptions"})
+            , "tariffs/edit/getChosenOptions", "contracts/getChosenOption"})
     @ResponseBody
     public Set<Option> getSessionActualOptions(HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -101,7 +101,7 @@ public class OptionController {
 
 
     @GetMapping(value = {"options/edit/getOtherSessionOptions", "tariffs/getAvailableOptions",
-            "tariffs/edit/getAvailableOptions"})
+            "tariffs/edit/getAvailableOptions", "contracts/getAvailableOptions"})
     @ResponseBody
     public Set<Option> getSessionOtherOptions(HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -165,11 +165,18 @@ public class OptionController {
     }
 
 
+
+
+
+
     @GetMapping(value = "options/remove/{id}")
     public String deleteOption(@PathVariable("id") int id) {
         optionService.remove(id);
         return "redirect: /options/showAll";
     }
+
+
+
 
 
 }

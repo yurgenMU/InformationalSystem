@@ -81,7 +81,9 @@ public class ClientDAO implements EntityDAO {
         Session session = sessionFactory.openSession();
         Query query = session.createQuery("from Client where email =:email");
         query.setParameter("email", name);
-        return (Client) query.uniqueResult();
+        Client ans = (Client) query.uniqueResult();
+        session.close();
+        return ans;
     }
 
 

@@ -1,10 +1,11 @@
 package service;
 
 import dao.ContractDAO;
-import model.AbstractEntity;
-import model.Contract;
+import model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.Random;
 import java.util.Set;
 
@@ -18,6 +19,10 @@ public class ContractService implements EntityService {
 
     @Autowired
     private TariffService tariffService;
+
+
+    @Autowired
+    private OptionService optionService;
 
 
     public ContractDAO getContractDAO() {
@@ -43,6 +48,14 @@ public class ContractService implements EntityService {
 
     public void setTariffService(TariffService tariffService) {
         this.tariffService = tariffService;
+    }
+
+    public OptionService getOptionService() {
+        return optionService;
+    }
+
+    public void setOptionService(OptionService optionService) {
+        this.optionService = optionService;
     }
 
     @Override
@@ -75,7 +88,33 @@ public class ContractService implements EntityService {
         contractDAO.removeEntity(id);
     }
 
-    private String generateNumber() {
+
+
+    public void setContractTariff(String tariff, HttpSession session){
+        Tariff tariff1 = getTariffService().getByName(tariff);
+        Set<Option> actual = tariff1.getOptions();
+        session.setAttribute("tariff", tariff1);
+        session.setAttribute("actual", actual);
+        session.setAttribute("other", optionService.getCompatibleOptions(actual));
+    }
+
+
+    public void addNewContractModel(HttpSession session, int clientId){
+        String phone = (String) session.getAttribute("phone");
+        Set<Option> options = (Set<Option>) session.getAttribute("actual");
+        options.forEach(x-> x.setTariffs(null));
+        Tariff tariff = (Tariff) session.getAttribute("tariff");
+        Contract contract = new Contract();
+        Client client = clientService.get(clientId);
+        contract.setClient(client);
+        contract.setOptions(options);
+        contract.setNumber(phone);
+        contract.setTariff(tariff);
+        add(contract);
+    }
+
+
+    public String generateNumber() {
         int num1, num2, num3; //3 numbers in area code
         int set2, set3; //sequence 2 and 3 of the phone number
 
@@ -98,6 +137,10 @@ public class ContractService implements EntityService {
         set3 = generator.nextInt(8999) + 1000;
 
 //        return("(" + num1 + "" + num2 + "" + num3 + ")" + "-" + set2 + "-" + set3);
+        String ans = "" + num1 + num2 + num3 + set2 + set3;
+        if (getByName(ans) != null){
+            generateNumber();
+        }
         return ("" + num1 + num2 + num3 + set2 + set3);
 
     }

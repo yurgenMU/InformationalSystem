@@ -59,7 +59,9 @@ public class ContractDAO implements EntityDAO {
     @Override
     public Contract getEntity(int id) {
         Session session = sessionFactory.openSession();
+        session.beginTransaction();
         Contract contract = session.get(Contract.class, id);
+        session.getTransaction().commit();
         session.close();
         return contract;
     }
@@ -75,7 +77,9 @@ public class ContractDAO implements EntityDAO {
         Session session = sessionFactory.openSession();
         Query query = session.createQuery("from Contract where number =:number");
         query.setParameter("number", number);
-        return (Contract) query.uniqueResult();
+        Contract ans = (Contract) query.uniqueResult();
+        session.close();
+        return ans;
     }
 
 
@@ -147,4 +151,6 @@ public class ContractDAO implements EntityDAO {
         session.close();
         return new HashSet<>(contracts);
     }
+
+
 }

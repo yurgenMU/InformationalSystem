@@ -83,7 +83,8 @@ public class OptionDAO implements EntityDAO {
         Session session = sessionFactory.openSession();
         Query query = session.createQuery("from Option where name =:name");
         query.setParameter("name", name);
-        return (Option) query.uniqueResult();
+        Option ans = (Option) query.uniqueResult();
+        return ans;
     }
 
 
@@ -207,7 +208,7 @@ public class OptionDAO implements EntityDAO {
         Set<Option> options = new HashSet<>();
         options.add(option);
         Set<Option> ans = getCompatibleOptions(options);
-        ans = ans.stream().filter(x-> x.getId()!=option.getId()).collect(Collectors.toSet());
+        ans = ans.stream().filter(x -> x.getId() != option.getId()).collect(Collectors.toSet());
         return ans;
     }
 

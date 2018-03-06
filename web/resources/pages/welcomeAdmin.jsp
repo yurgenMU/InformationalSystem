@@ -44,7 +44,6 @@
 
 <button class="accordion">Contracts</button>
 <div class="panel">
-    <a href="${contextPath}/contracts/new">Create new</a><br>
     <a href="${contextPath}/options/management">Management</a><br>
 </div>
 

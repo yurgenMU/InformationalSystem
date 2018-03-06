@@ -1,9 +1,7 @@
 package service;
 
 import dao.ClientDAO;
-import model.AbstractEntity;
-import model.Client;
-import model.Option;
+import model.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -91,4 +89,7 @@ public class ClientService implements EntityService {
         });
         return ans;
     }
+
+
+
 }
